@@ -1,0 +1,12 @@
+default_tier: local_light
+
+tiers:
+  local_light:
+    backend: ollama
+    host: http://acemagic-ollama:11434
+    model: llama3.2:3b-instruct
+
+  local_heavy:
+    backend: ollama
+    host: http://aidesktop-ollama:11434
+    model: llama3.1:8b-instruct
