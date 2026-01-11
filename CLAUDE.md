@@ -96,3 +96,97 @@ Follow Conventional Commits: `feat(scope): message`, `fix(scope): message`
 - Run `./gradlew test` before creating PRs
 - Backend uses JUnit 5 + AssertJ + Mockito
 - Frontend uses Karma + Jasmine
+
+---
+
+## AI Librarian Feature (In Development)
+
+### Overview
+
+AI-powered librarian that can:
+1. **Reorganize library by genre** - Create shelves and assign books via natural language
+2. **Answer questions about books** - Query the collection conversationally
+3. **Identify bad metadata** - AI-based semantic analysis of metadata quality
+
+**Scope**: Shelf management only (no library creation or file moves). Chat interface. Supports Ollama + OpenAI + Anthropic.
+
+### Architecture
+
+```
+Angular UI (Chat Panel)
+    |
+    | SSE streaming
+    v
+AI Orchestrator (FastAPI)
+    |-- LLM Providers (Ollama/OpenAI/Anthropic)
+    |-- Intent Classification
+    |-- Plan Generation & Execution
+    |
+    | REST API
+    v
+BookLore Backend (Spring Boot)
+    |-- Shelf CRUD (/api/v1/shelves)
+    |-- Book Assignment (/api/v1/books/shelves)
+    |-- Magic Shelf CRUD (/api/magic-shelves)
+```
+
+### Implementation Phases
+
+#### Phase 1: LLM Provider Abstraction
+- New `ai-orchestrator/app/llm_providers/` package with base.py, ollama.py, openai.py, anthropic.py
+- Refactor `model_gateway.py` to use provider factory
+- Update `config/models.yml` with cloud_openai and cloud_anthropic tiers
+
+#### Phase 2: Expanded BookLore Client
+- Add shelf CRUD methods to `booklore_client.py`
+- Add magic shelf methods
+- Add book filtering/query methods
+
+#### Phase 3: Intent & Planning System
+- `ai-orchestrator/app/intents.py` - Intent classification
+- `ai-orchestrator/app/tools.py` - Tool definitions for function calling
+- `ai-orchestrator/app/conversation.py` - Conversation state
+
+#### Phase 4: Streaming Chat Endpoint
+- `ai-orchestrator/app/routes_chat_stream.py` - SSE streaming endpoint
+- POST `/api/chat/stream` with events: thinking, delta, action, done
+
+#### Phase 5: Metadata Quality Analyzer
+- `ai-orchestrator/app/metadata_analyzer.py` - Batch LLM analysis
+- Detects: wrong categories, garbled text, placeholder titles
+
+#### Phase 6: Angular Chat UI
+- New feature module: `booklore-ui/src/app/features/ai-librarian/`
+- Components: chat-panel, chat-message, chat-input
+- Services: ai-chat.service.ts (SSE client), chat-history.service.ts
+
+### Key Files
+
+| Component | File |
+|-----------|------|
+| LLM Gateway | `ai-orchestrator/app/model_gateway.py` |
+| BookLore Client | `ai-orchestrator/app/booklore_client.py` |
+| Config | `config/models.yml` |
+| Shelf API | `booklore-api/.../controller/ShelfController.java` |
+| Magic Shelf API | `booklore-api/.../controller/MagicShelfController.java` |
+| Book Assignment | `booklore-api/.../service/book/BookService.java` |
+
+### Models Config (config/models.yml)
+
+```yaml
+default_tier: local_light
+
+tiers:
+  local_light:
+    backend: ollama
+    host: http://ollama:11434
+    model: llama3.2:3b-instruct
+
+  cloud_openai:
+    backend: openai
+    model: gpt-4o-mini
+
+  cloud_anthropic:
+    backend: anthropic
+    model: claude-3-5-sonnet-20241022
+```
