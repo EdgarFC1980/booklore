@@ -1,0 +1,31 @@
+default_tier: local_light
+
+tiers:
+  # Local Ollama tiers
+  local_light:
+    backend: ollama
+    host: http://acemagic-ollama:11434
+    model: llama3.2:3b-instruct
+
+  local_heavy:
+    backend: ollama
+    host: http://aidesktop-ollama:11434
+    model: llama3.1:8b-instruct
+
+  # Cloud tiers (requires API keys via environment variables)
+  # Set OPENAI_API_KEY or ANTHROPIC_API_KEY in .env or environment
+  cloud_openai:
+    backend: openai
+    model: gpt-4o-mini
+
+  cloud_openai_large:
+    backend: openai
+    model: gpt-4o
+
+  cloud_anthropic:
+    backend: anthropic
+    model: claude-sonnet-4-20250514
+
+  cloud_anthropic_large:
+    backend: anthropic
+    model: claude-opus-4-20250514
